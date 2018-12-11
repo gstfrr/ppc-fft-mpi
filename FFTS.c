@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     clock_gettime(CLOCK_REALTIME, &now);
     double seconds = (double) ((now.tv_sec + now.tv_nsec * 1e-9) - (double) (tmstart.tv_sec + tmstart.tv_nsec * 1e-9));
 
-    printf("\nC time: "STRONGT"%f"RESETT" seconds\n\n", seconds);
+    printf("\nTempo sequencial:\t "STRONGT"%f"RESETT" segundos\n\n", seconds);
 
     printResult(Result);
 
