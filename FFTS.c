@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 
     printf("\nTempo sequencial:\t "STRONGT"%f"RESETT" segundos\n\n", seconds);
 
-    printResult(Result);
+    //printResult(Result);
 
     return 0;
 
