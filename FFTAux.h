@@ -1,8 +1,8 @@
 #ifndef FFTAUX_H
 #define FFTAUX_H
 
-#define N 65536/2
-#define PRINT_LIMIT 16
+#define N 8
+#define PRINT_LIMIT 8
 
 #define STRONGT    "\033[1m\x1b[35m"
 #define RESETT   "\x1b[0m"
@@ -15,6 +15,7 @@ typedef struct {
     double imag;
 } Complex;
 
+void loadData(Complex *Input);
 
 Complex multiply(Complex *a, Complex *b);
 
