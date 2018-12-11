@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
         printf("Tempo em paralelo:\t "STRONGT"%f"RESETT" secs\n", seconds);
         printf("Tempo MPI: "STRONGT"%f"RESETT" secs\n\n", mpiend - mpist);
 
-        printResultSeparate(ResultR, ResultI);
+        //printResultSeparate(ResultR, ResultI);
     }
     MPI_Finalize();
 }
