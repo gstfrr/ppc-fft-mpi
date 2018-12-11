@@ -1,7 +1,7 @@
 #ifndef FFTAUX_H
 #define FFTAUX_H
 
-#define N 8
+#define N 65536
 #define PRINT_LIMIT 8
 
 #define STRONGT    "\033[1m\x1b[35m"
