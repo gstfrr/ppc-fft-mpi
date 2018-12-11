@@ -136,9 +136,9 @@ int main(int argc, char **argv) {
                                    (double) (tmstart.tv_sec + tmstart.tv_nsec * 1e-9));
 
         printf("\n");
-        printf("Running at: "STRONGT"%d"RESETT" proc:\n", size);
-        printf("C time: "STRONGT"%f"RESETT" secs\n", seconds);
-        printf("MPI time: "STRONGT"%f"RESETT" secs\n\n", mpiend - mpist);
+        printf("Número de processos:\t "STRONGT"%d"RESETT" proc:\n", size);
+        printf("Tempo em paralelo:\t "STRONGT"%f"RESETT" secs\n", seconds);
+        printf("Tempo MPI: "STRONGT"%f"RESETT" secs\n\n", mpiend - mpist);
 
         printResultSeparate(ResultR, ResultI);
     }
