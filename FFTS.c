@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
 
         //Get difference between indices of Euler values for current k
         diff = (k - 1 + (N >> 1)) % (N >> 1);
+//        printf("%d\t%d\n", k, diff);
         idx = 0; //start index is 0
 
         for (n = 0; n < (N >> 1); n++) {
