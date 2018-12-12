@@ -1,12 +1,13 @@
 //***************************************************************
-// This is a parallel implementation of the radix-2 FFT algorithm.
-// All processes first calculate (N/2)/comm_size of the euler values
-// (e^(-theta)) and then distribute to every other process using
-// MPI_Allgather. Then each process computes (N/2)/comm_size of
-// the result and gathers their results to process 0 which ouputs it.
+// radix-2 FFT algorithm
+// Todos os processos calculam (N/2)/np dos valores de Euler
+// (e^(-theta))  e os distribui para todos os processos
+// usando MPI_Allgather. Assim todos os processos computam sua parte
+// e reunem para o processo 0 usando MPI_Gather. Os resultados imaginários
+// são separados dos reais
 //
-// Compilation:  mpicc -o teste FFTP.c FFTAux.c
-// Execution: mpirun -np 2 teste
+// Compilação:  mpicc -o teste FFTP.c FFTAux.c
+// Execução: mpirun -np 2 teste
 //
 //*****************************************************************
 
@@ -18,16 +19,19 @@
 #include "FFTAux.h"
 
 
-//Main
 int main(int argc, char **argv) {
     int size, rank;
     Complex Input[N];
 
-    //Input values
+    //Entrada: array de tamanho N com valores
+    // definidos apenas nas 8 entradas
     loadData(Input);
+
+    //Iniciar MPI
     MPI_Init(NULL, NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 
     int localN = (N / 2) / size;
     double EulerR[N / 2], EulerI[N / 2];
@@ -35,19 +39,22 @@ int main(int argc, char **argv) {
     double tempEulerI[localN], tempEulerR[localN];
     double tempResultR[localN * 2], tempResultI[localN * 2];
 
+
+    // Variaveis para calcular o tempo
     struct timespec now, tmstart;
-    double mpist, mpiend;
+    double mpi_begin, mpi_end;
 
     if (rank == 0) {
+        //Armazenar resultados apenas no processo root
         ResultR = malloc(sizeof(double) * N);
         ResultI = malloc(sizeof(double) * N);
 
-        //start timers
+        //Iniciar contagem do tempo
         clock_gettime(CLOCK_REALTIME, &tmstart);
-        mpist = MPI_Wtime();
+        mpi_begin = MPI_Wtime();
     }
 
-    //Compute Euler values
+    //Calcula o valor de Euler (e^(-theta))
     double theta, ang = 4.0 * M_PI / N;
     int x;
     for (x = 0; x < localN; x++) {
@@ -56,7 +63,7 @@ int main(int argc, char **argv) {
         tempEulerI[x] = -sin(theta);
     }
 
-    //Distribute euler values to all processes
+    //Distribuir os valores para todos os processos
     MPI_Allgather(tempEulerR, localN, MPI_DOUBLE, EulerR, localN, MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Allgather(tempEulerI, localN, MPI_DOUBLE, EulerI, localN, MPI_DOUBLE, MPI_COMM_WORLD);
 
@@ -75,16 +82,17 @@ int main(int argc, char **argv) {
 
         //Get difference between indices of Euler values for current k
         diff = (k - 1 + (N >> 1)) % (N >> 1);
+        if (rank == 0) printf("%d\n", diff);
         idx = 0; //start index is 0
 
         for (n = 0; n < (N >> 1); n++) {
-            //get current euler component
+            // pegar o valor de Euler atual
             euler.real = EulerR[idx];
             euler.imag = EulerI[idx];
 
             //multiply even input with euler component
             temp = multiply(&Input[n << 1], &euler);
-            //add result to even
+            // somar resultado
             even = add(&even, &temp);
 
             //multiply odd component with euler input
@@ -96,7 +104,7 @@ int main(int argc, char **argv) {
             idx = (idx + diff + 1) % (N >> 1);
         }
 
-        //Compute twiddle
+        //calcular o twiddle
         theta = k * PI2_by_N;
         twiddle.real = cos(theta);
         twiddle.imag = -sin(theta);
@@ -116,29 +124,30 @@ int main(int argc, char **argv) {
         tempResultI[x + localN] = result.imag;
     }
 
-    //Gather results to process 0
+    //Reunir os resultados para o processo 0
 
-    //First N/2 results
+    //Primeiros N/2 resultados
     MPI_Gather(tempResultR, localN, MPI_DOUBLE, ResultR, localN, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gather(tempResultI, localN, MPI_DOUBLE, ResultI, localN, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    //Second N/2 results
+    //Segundos N/2 resultados
     MPI_Gather(tempResultR + localN, localN, MPI_DOUBLE, ResultR + (N / 2), localN, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gather(tempResultI + localN, localN, MPI_DOUBLE, ResultI + (N / 2), localN, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
-        //Redirect output to file
-//        freopen("EnemKhalidParallel.txt", "w", stdout);
 
-        //End timers
-        mpiend = MPI_Wtime();
+
+        // Calcular o tempo de processamento
+        mpi_end = MPI_Wtime();
         clock_gettime(CLOCK_REALTIME, &now);
         double seconds = (double) ((now.tv_sec + now.tv_nsec * 1e-9) -
                                    (double) (tmstart.tv_sec + tmstart.tv_nsec * 1e-9));
 
         printf("\n");
         printf("Número de processos:\t "STRONGT"%d"RESETT" proc:\n", size);
+        // Tempo total do programa
         printf("Tempo em paralelo:\t "STRONGT"%f"RESETT" secs\n", seconds);
-        printf("Tempo MPI: "STRONGT"%f"RESETT" secs\n\n", mpiend - mpist);
+        // Tempo do MPI
+        printf("Tempo total do MPI: "STRONGT"%f"RESETT" secs\n\n", mpi_end - mpi_begin);
 
         //printResultSeparate(ResultR, ResultI);
     }
