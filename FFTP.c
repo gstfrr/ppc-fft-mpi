@@ -82,7 +82,6 @@ int main(int argc, char **argv) {
 
         //Get difference between indices of Euler values for current k
         diff = (k - 1 + (N >> 1)) % (N >> 1);
-        if (rank == 0) printf("%d\n", diff);
         idx = 0; //start index is 0
 
         for (n = 0; n < (N >> 1); n++) {
@@ -90,14 +89,14 @@ int main(int argc, char **argv) {
             euler.real = EulerR[idx];
             euler.imag = EulerI[idx];
 
-            //multiply even input with euler component
+            //multiplicar os pares com o valor de Euler
             temp = multiply(&Input[n << 1], &euler);
             // somar resultado
             even = add(&even, &temp);
 
-            //multiply odd component with euler input
+            //multiplicar os ímpares com o valor de Euler
             temp = multiply(&Input[(n << 1) + 1], &euler);
-            //add result to odd
+            //somar resultado
             odd = add(&odd, &temp);
 
             //compute index for next euler component
@@ -149,7 +148,7 @@ int main(int argc, char **argv) {
         // Tempo do MPI
         printf("Tempo total do MPI: "STRONGT"%f"RESETT" secs\n\n", mpi_end - mpi_begin);
 
-        //printResultSeparate(ResultR, ResultI);
+        printResultSeparate(ResultR, ResultI);
     }
     MPI_Finalize();
 }
